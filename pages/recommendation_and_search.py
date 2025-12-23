@@ -62,7 +62,13 @@ if st.button("Подобрать фильмы", type="primary"):
         results = results.sort_values("keyword_similarity", ascending=False)
 
     if selected_title != "Не выбран" and keywords.strip() == "" and genre.strip() == "":
-        results = results.sort_values(by=results.index.map(dict(scores)), ascending=False)
+        score_dict = {i: score for i, score in scores}
+        def get_similarity(idx):
+            return score_dict.get(idx, 0)
+        results = results.copy()
+        results['_similarity_score'] = results.index.map(get_similarity)
+        results = results.sort_values('_similarity_score', ascending=False)
+        results = results.drop('_similarity_score', axis=1)
 
     if len(results) == 0:
         st.info("По вашим критериям ничего не найдено 😔 Попробуйте ослабить фильтры.")

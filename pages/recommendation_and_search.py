@@ -47,19 +47,22 @@ if st.button("Подобрать фильмы", type="primary"):
         st.info("Фильм не выбран — ищем по всем фильмам")
 
     if genre.strip():
-        results = results[results["genre"].str.contains(genre, case=False, na=False)]
+        genre_lower = genre.strip().lower()
+        results = results[results["genre"].str.contains(genre_lower, case=False, na=False)]
 
     results = results[results["rating"] >= min_rating]
 
     if keywords.strip():
-        query_vec = vectorizer.transform([keywords])
+        keywords_lower = keywords.strip().lower()
+        query_vec = vectorizer.transform([keywords_lower])
         current_tfidf = vectorizer.transform(results["features"])
         sim_scores = cosine_similarity(query_vec, current_tfidf).flatten()
 
         results = results.copy()
         results["keyword_similarity"] = sim_scores
-        results = results[results["keyword_similarity"] > 0.05]
-        results = results.sort_values("keyword_similarity", ascending=False)
+        if len(results) > 0:
+            results = results[results["keyword_similarity"] > 0.05]
+            results = results.sort_values("keyword_similarity", ascending=False)
 
     if selected_title != "Не выбран" and keywords.strip() == "" and genre.strip() == "":
         score_dict = {i: score for i, score in scores}

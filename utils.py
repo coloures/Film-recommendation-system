@@ -14,13 +14,27 @@ def card(movie):
         st.write(f"**Жанры:** {movie.get('genre', '-')}")
     
     if movie.get("description"):
-        st.caption(movie["description"][:200] + "...")
+        st.caption(movie["description"])
 
     if movie.get("stars"):
-        actors = str(movie["stars"]).replace('[', '').replace(']', '').replace("'", "")
-        while ", ," in actors:
-            actors = actors.replace(", ,", ", ")
-        actors = actors.strip(', ')
-    
-        if actors and len(actors) > 5:
-            st.caption(f"**Актёры:** {actors[:100]}...")
+        actors = movie["stars"]
+        if isinstance(actors, str):
+            actors = actors.replace('[', '').replace(']', '').replace("'", "")
+            actors_list = [actor.strip() for actor in actors.split(',') if actor.strip()]
+        elif isinstance(actors, list):
+            actors_list = [str(actor).strip() for actor in actors if str(actor).strip()]
+        else:
+            actors_list = []
+
+        filtered_actors = []
+        for actor in actors_list:
+            actor = actor.strip()
+            if (actor and 
+                len(actor) > 2 and 
+                not actor.endswith(':') and
+                actor != '|' and 
+                not actor.startswith(':')): 
+                filtered_actors.append(actor)
+        if filtered_actors:
+            display_actors = filtered_actors[:7]
+            st.caption(f"**Актёры:** {', '.join(display_actors)}")
